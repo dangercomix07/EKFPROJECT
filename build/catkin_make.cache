@@ -1,0 +1,2 @@
+beginner_tutorials:course_project:turtlebot3_simulations/turtlebot3_fake:turtlebot3_simulations/turtlebot3_gazebo:turtlebot3_simulations/turtlebot3_simulations:vicon_bridge
+-DCATKIN_DEVEL_PREFIX=/home/ameya/EKFPROJECT/devel -DCMAKE_INSTALL_PREFIX=/home/ameya/EKFPROJECT/install -G Unix Makefiles
