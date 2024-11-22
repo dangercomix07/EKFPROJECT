@@ -131,11 +131,7 @@ endif()
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
   include("/home/ameya/EKFPROJECT/build/gtest/cmake_install.cmake")
-  include("/home/ameya/EKFPROJECT/build/turtlebot3_simulations/turtlebot3_simulations/cmake_install.cmake")
-  include("/home/ameya/EKFPROJECT/build/beginner_tutorials/cmake_install.cmake")
   include("/home/ameya/EKFPROJECT/build/course_project/cmake_install.cmake")
-  include("/home/ameya/EKFPROJECT/build/turtlebot3_simulations/turtlebot3_fake/cmake_install.cmake")
-  include("/home/ameya/EKFPROJECT/build/turtlebot3_simulations/turtlebot3_gazebo/cmake_install.cmake")
   include("/home/ameya/EKFPROJECT/build/vicon_bridge/cmake_install.cmake")
 
 endif()

@@ -1,0 +1,8 @@
+prefix=/home/ameya/EKFPROJECT/devel
+
+Name: course_project
+Description: Description of course_project
+Version: 0.0.0
+Cflags: -I/home/ameya/EKFPROJECT/devel/include
+Libs: -L${prefix}/lib 
+Requires: message_runtime
