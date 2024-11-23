@@ -1,0 +1,18 @@
+# EKFPROJECT
+SC649 Course Project\
+<br>
+## Trajectory
+Trajectory is Lissajous curve\
+x(t) = Asin(at+delta)\
+y(t) = Bsin(bt)\
+A = B = 1.0 Amplitudes\
+a = 1, b = 2 Frequencies\
+![image](src/course_project/worlds/textures/lissajous_curve.png)
+<br>
+## Updated scripts:
+- controller3.py\
+Implements a EKF for pose estimation and simple proportional control for trajectory following.
+- vis2.py\
+Image is saved iteratively to avoid backend runtime issues for live visualisation. Can view live from VS code.
+
+

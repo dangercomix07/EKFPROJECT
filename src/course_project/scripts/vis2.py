@@ -6,9 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from math import sin, pi
 
-# Use a GUI backend for live plot
+# Use 'Agg' backend for better stability with ROS
 import matplotlib
-matplotlib.use('Qt5Agg')  # Use Qt for live plotting
+matplotlib.use('Agg')
 
 # Static Lissajous curve parameters
 A, B = 1.0, 1.0  # Amplitudes
@@ -47,8 +47,8 @@ waypoints_y = []
 estimated_x = []
 estimated_y = []
 
-# Listener for robot pose
 def pose_listener(data):
+    """Callback to update robot pose."""
     global X_track, Y_track
     x = data.pose.pose.position.x
     y = data.pose.pose.position.y
@@ -56,6 +56,7 @@ def pose_listener(data):
     Y_track.append(y)
 
 def waypoint_listener(data):
+    """Callback to update waypoints."""
     global waypoints_x, waypoints_y
     waypoint = data.data.split(",")
     x, y = float(waypoint[0]), float(waypoint[1])
@@ -86,9 +87,8 @@ def update_plot():
     if estimated_x and estimated_y:
         line_ep.set_data(estimated_x[-1], estimated_y[-1])  # Only show the latest estimated pose
 
-    # Draw the plot
-    fig.canvas.draw()
-    fig.canvas.flush_events()
+    # Save the plot to a file for visualization
+    plt.savefig('/home/ameya/EKFPROJECT/src/course_project/scripts/Robot_Trajectory.png')
 
 def process():
     """ROS node for real-time visualization."""
@@ -104,12 +104,7 @@ def process():
 
 if __name__ == '__main__':
     try:
-        plt.ion()  # Enable interactive mode
         print("Process started")
         process()
     except rospy.ROSInterruptException:
         pass
-    finally:
-        plt.ioff()  # Disable interactive mode
-        plt.savefig('Robot_Trajectory.png')
-        plt.show()
