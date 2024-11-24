@@ -4,7 +4,7 @@ from __future__ import division
 import rospy
 from geometry_msgs.msg import Twist, TransformStamped
 
-from std_msgs.msg import String
+from std_msgs.msg import String, Float64
 from nav_msgs.msg import Odometry
 import numpy as np
 from math import atan, atan2, pi, sin, cos, sqrt
@@ -230,6 +230,11 @@ def get_waypoint(t):
     y = B * sin(b * t)          # y-coordinate
     return [x, y]
 
+def calculate_mse(noisy_pose, estimated_pose):
+    """Calculate Mean Squared Error (MSE) between noisy_pose and estimated_pose."""
+    mse = np.mean((noisy_pose - estimated_pose) ** 2)
+    return mse
+
 # This is where we will write code for trajectory following
 def control_loop():
     global pose, depub, input_sys, estimated_pose, noisy_pose
@@ -240,11 +245,12 @@ def control_loop():
 
     rospy.Subscriber('/trilateration_data', Trilateration, callback)
     rospy.Subscriber('/odom', Odometry, callback_odom)
-    rospy.Subscriber('/vicon/tb3_3/tb3_3', TransformStamped, callback_vicon)
+    #rospy.Subscriber('/vicon/tb3_3/tb3_3', TransformStamped, callback_vicon)
 
     depub = rospy.Publisher('/odom2', Odometry, queue_size=10)
     pubw = rospy.Publisher('/bot_0/waypoint', String, queue_size=10)
     pubep = rospy.Publisher('/bot_0/estimatedpose', String, queue_size=10)
+    pubMSE = rospy.Publisher('/mse_error', Float64, queue_size=10)
     
     # Setting the rate for loop execution
     rate = rospy.Rate(5) # 5Hz
@@ -289,8 +295,10 @@ def control_loop():
         input_sys[0] = velocity_msg.linear.x
         input_sys[1] = velocity_msg.angular.z
 
-        timer = timer + 0.004 * pi
+        # Calculate MSE
+        mse = calculate_mse(noisy_pose, estimated_pose)
 
+        timer = timer + 0.004 * pi
 
         rospy.loginfo(f"Estimated Pose: {estimated_pose.flatten()}")
         rospy.loginfo(f"Waypoint: {waypoint}")
@@ -298,7 +306,8 @@ def control_loop():
         pub.publish(velocity_msg)
         waypoint_str = ', '.join(map(str, waypoint))  # Convert the list to a comma-separated string
         pubw.publish(waypoint_str)  # Publish the string message 
-        pubep.publish(','.join(map(str, estimated_pose.flatten())))     
+        pubep.publish(','.join(map(str, estimated_pose.flatten())))
+        pubMSE.publish(mse)    
 
         rate.sleep()
 
