@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 from math import sin, pi
 
 # Use 'Agg' backend for better stability with ROS
+# backend is giving multithread errorrs
 import matplotlib
 matplotlib.use('Agg')
 

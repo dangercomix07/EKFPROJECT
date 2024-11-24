@@ -240,15 +240,18 @@ def control_loop():
 
     rospy.Subscriber('/trilateration_data', Trilateration, callback)
     rospy.Subscriber('/odom', Odometry, callback_odom)
-    # rospy.Subscriber('/vicon/tb3_3/tb3_3', TransformStamped, callback_vicon)
+    rospy.Subscriber('/vicon/tb3_3/tb3_3', TransformStamped, callback_vicon)
 
     depub = rospy.Publisher('/odom2', Odometry, queue_size=10)
     pubw = rospy.Publisher('/bot_0/waypoint', String, queue_size=10)
     pubep = rospy.Publisher('/bot_0/estimatedpose', String, queue_size=10)
     
     # Setting the rate for loop execution
-    rate = rospy.Rate(10) # 10Hz
+    rate = rospy.Rate(5) # 5Hz
+    # 10 Hz doesnt track properly
     timer = 0
+    errorV_prev = 0
+    errorTheta_prev = 0
 
     while not rospy.is_shutdown():
 
@@ -256,6 +259,8 @@ def control_loop():
 
         KpV = 0.5
         KpW = 0.4
+        KdV = 0.01
+        KdW = 0.01
         Vmax = 1.0
         Wmax = 0.5
 
@@ -263,6 +268,7 @@ def control_loop():
         ey = waypoint[1] - estimated_pose[1, 0]
         theta_desired = np.arctan2(ey,ex)
         etheta = theta_desired - estimated_pose[2,0]
+        deW = etheta - errorTheta_prev
 
         # Wrap angle between -pi and pi
         if etheta> pi:
@@ -271,8 +277,10 @@ def control_loop():
             etheta += 2 * pi
 
         e = sqrt(ex**2 + ey**2)
-        uV = np.clip(KpV*e,-Vmax,Vmax)
-        uW = np.clip(KpW*etheta,-Wmax,Wmax)
+        de = e - errorV_prev
+
+        uV = np.clip(KpV*e + KdV*de,-Vmax,Vmax)
+        uW = np.clip(KpW*etheta +KdW*deW,-Wmax,Wmax)
 
         velocity_msg = Twist() 
         velocity_msg.linear.x = uV
@@ -291,7 +299,6 @@ def control_loop():
         waypoint_str = ', '.join(map(str, waypoint))  # Convert the list to a comma-separated string
         pubw.publish(waypoint_str)  # Publish the string message 
         pubep.publish(','.join(map(str, estimated_pose.flatten())))     
-        #pubep.publish(str(estimated_pose.tolist()))
 
         rate.sleep()
 
