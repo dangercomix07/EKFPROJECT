@@ -14,6 +14,9 @@ from course_project.msg import Trilateration
 from trilateration import varA, varB, varC, landmarkA, landmarkB, landmarkC
 from visualization_msgs.msg import Marker
 from geometry_msgs.msg import Point
+# Global variables for cumulative MSE calculation
+cumulative_squared_error = 0  # Sum of squared errors
+iteration_count = 0  # Total number of iterations
 
 # Initialising
 #pose = np.zeros((3,1)) # Current pose (x,y,theta)
@@ -223,7 +226,7 @@ def get_waypoint(t):
     # Sinusoidal trajectory
     A, B = 1.0, 1.0  # Amplitudes
     a, b = 1.0, 2.0  # Frequencies
-    delta = 0      # Phase shift 
+    delta = pi      # Phase shift 
 
     # Calculate desired trajectory
     x = A * sin(a * t + delta)  # x-coordinate
@@ -232,7 +235,13 @@ def get_waypoint(t):
 
 def calculate_mse(noisy_pose, estimated_pose):
     """Calculate Mean Squared Error (MSE) between noisy_pose and estimated_pose."""
-    mse = np.mean((noisy_pose - estimated_pose) ** 2)
+    global cumulative_squared_error, iteration_count
+    errors = (noisy_pose - estimated_pose).flatten()
+    squared_error = np.sum(errors ** 2)
+
+    cumulative_squared_error += squared_error
+    iteration_count += 1
+    mse = cumulative_squared_error / (iteration_count * 3)  # 3 dimensions (x, y, theta)
     return mse
 
 # This is where we will write code for trajectory following
@@ -242,10 +251,11 @@ def control_loop():
     rospy.init_node('controller_node')
 
     pub = rospy.Publisher('/cmd_vel', Twist, queue_size=10)
+    pub = rospy.Publisher('tb3_5/cmd_vel', Twist, queue_size=10)
 
     rospy.Subscriber('/trilateration_data', Trilateration, callback)
     rospy.Subscriber('/odom', Odometry, callback_odom)
-    #rospy.Subscriber('/vicon/tb3_3/tb3_3', TransformStamped, callback_vicon)
+    rospy.Subscriber('/vicon/tb3_5/tb3_5', TransformStamped, callback_vicon)
 
     depub = rospy.Publisher('/odom2', Odometry, queue_size=10)
     pubw = rospy.Publisher('/bot_0/waypoint', String, queue_size=10)

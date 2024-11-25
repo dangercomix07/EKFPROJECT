@@ -46,7 +46,7 @@ def trilateration_pub():
     global landmarkA, landmarkB, landmarkC
     rospy.init_node('Trilateration_node', anonymous=True)
     rospy.Subscriber('/odom', Odometry, callback)
-    # rospy.Subscriber('/vicon/tb3_3/tb3_3', TransformStamped, callback_vicon) # For vicon implementaton
+    rospy.Subscriber('/vicon/tb3_5/tb3_5', TransformStamped, callback_vicon) # For vicon implementaton
     
     pub = rospy.Publisher('trilateration_data', Trilateration, queue_size=10)
     rate = rospy.Rate(10)
